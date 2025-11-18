@@ -1,119 +1,136 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>BẢNG XẾP HẠNG PICKLEBALL</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viewer</title>
 
-  <style>
+<style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 16px;
-      background: #f5f5f5;
+        font-family: Arial, sans-serif;
+        padding: 0;
+        margin: 0;
+        background: #f5f5f5;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 4px;
+
+    #container {
+        padding: 10px;
+        max-width: 1200px;
+        margin: auto;
     }
-    .subtitle {
-      text-align: center;
-      margin-bottom: 16px;
-      font-size: 14px;
-      color: #555;
-    }
-    #table-container {
-      overflow-x: auto;
-    }
+
     table {
-      border-collapse: collapse;
-      margin: 0 auto;
-      background: #fff;
-      min-width: 600px;
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        margin-top: 20px;
     }
+
     th, td {
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      text-align: center;
-      vertical-align: middle;
-      font-size: 14px;
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 14px;
     }
+
     th {
-      background: #f0f0f0;
-      font-weight: bold;
+        background: #eee;
+        font-weight: bold;
     }
-    img {
-      max-width: 60px;
-      max-height: 60px;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
+
+    /* Ảnh trong bảng */
+    .sheet-img {
+        max-width: 160px;
+        max-height: 160px;
+        object-fit: contain;
+        display: block;
+        margin: auto;
     }
-  </style>
+
+    /* 2 ảnh góc */
+    .corner-img {
+        width: 120px;
+        position: absolute;
+        top: 10px;
+    }
+
+    #left-img {
+        left: 10px;
+    }
+
+    #right-img {
+        right: 10px;
+    }
+</style>
+
 </head>
 <body>
-  <h1>BẢNG XẾP HẠNG PICKLEBALL</h1>
-  <div class="subtitle">Auto update từ Google Sheets</div>
 
-  <div id="table-container">Đang tải...</div>
+<!-- Ảnh trái -->
+<img id="left-img" class="corner-img" 
+     src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/anh%20pvna.jpg" 
+     alt="Left Corner">
 
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1_Pv7nnFw5Ylh-HFE-BxxdQYXX8FIIuesc239s6helZOfI27WwfLMbRvQfDWSk3wrZg/exec";
+<!-- Ảnh phải -->
+<img id="right-img" class="corner-img" 
+     src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/QR%20teck%20ko.jpg" 
+     alt="Right Corner">
 
-    async function loadData() {
-      const container = document.getElementById("table-container");
+<div id="container">
+    <div id="table-container">Đang tải...</div>
+</div>
 
-      try {
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1_Pv7nnFw5Ylh-HFE-BxxdQYXX8FIIuesc239s6helZOfI27WwfLMbRvQfDWSk3wrZg/exec";
+
+async function loadTable() {
+    const container = document.getElementById("table-container");
+
+    try {
         const res = await fetch(SCRIPT_URL);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-
         const json = await res.json();
-        const data = json.data || []; // mảng 2 chiều, mỗi ô là {text, imageUrls}
+        const data = json.data;
 
-        // Tạo bảng
         const table = document.createElement("table");
 
-        data.forEach((row, rowIndex) => {
-          const tr = document.createElement("tr");
+        data.forEach((row, rIndex) => {
+            const tr = document.createElement("tr");
 
-          row.forEach((cell, colIndex) => {
-            const td = document.createElement(rowIndex === 3 ? "th" : "td");
-            // rowIndex === 3 vì trong JSON của bạn hàng thứ 4 là tiêu đề: STT, Vận động viên,...
+            row.forEach((cell, cIndex) => {
+                const td = document.createElement(rIndex === 3 ? "th" : "td");
 
-            // Nếu có ảnh
-            if (cell.imageUrls && cell.imageUrls.length > 0) {
-              const img = document.createElement("img");
-              img.src = cell.imageUrls[0];      // chỉ lấy ảnh đầu tiên
-              td.appendChild(img);
-            }
+                // Có ảnh trong sheet
+                if (cell.imageUrls && cell.imageUrls.length > 0) {
+                    const img = document.createElement("img");
+                    img.src = cell.imageUrls[0];
+                    img.className = "sheet-img";
+                    td.appendChild(img);
+                }
 
-            // Nếu có text
-            if (cell.text) {
-              // Nếu vừa có ảnh vừa có text thì xuống dòng
-              if (td.childNodes.length > 0) {
-                td.appendChild(document.createElement("br"));
-              }
-              const span = document.createElement("span");
-              span.textContent = cell.text;
-              td.appendChild(span);
-            }
+                // Có text
+                if (cell.text) {
+                    if (td.childNodes.length > 0) td.appendChild(document.createElement("br"));
+                    td.appendChild(document.createTextNode(cell.text));
+                }
 
-            tr.appendChild(td);
-          });
+                tr.appendChild(td);
+            });
 
-          table.appendChild(tr);
+            table.appendChild(tr);
         });
 
-        // Gắn vào DOM
         container.innerHTML = "";
         container.appendChild(table);
 
-      } catch (err) {
+    } catch (err) {
         console.error(err);
         container.textContent = "Lỗi tải dữ liệu!";
-      }
     }
+}
 
-    loadData();
-  </script>
+loadTable();
+</script>
+
 </body>
 </html>
