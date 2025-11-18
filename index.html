@@ -126,20 +126,41 @@
     }
 
     /* 2 ảnh góc */
-    .corner-img {
-        width: 120px;
-        position: absolute;
-        top: 10px;
-        object-fit: contain;
-    }
+    /* Ảnh góc — phiên bản lớn đẹp */
+.corner-img {
+    position: absolute;
+    top: 10px;
+    object-fit: contain;
+}
 
-    #left-img {
-        left: 10px;
-    }
+/* Ảnh trái lớn hơn (logo PVNA) */
+#left-img {
+    left: 10px;
+    width: 180px;     /* 🔥 tăng từ 120px → 180px */
+}
 
-    #right-img {
-        right: 10px;
-    }
+/* Ảnh bên phải (QR) giữ nguyên kích thước để không chiếm quá nhiều chỗ */
+#right-img {
+    right: 10px;
+    width: 120px;
+}
+
+/* --- Responsive chỉnh lại cho màn hình nhỏ --- */
+@media (max-width: 1024px) {
+    #left-img { width: 150px; }   /* tablet ngang */
+    #right-img { width: 100px; }
+}
+
+@media (max-width: 768px) {
+    #left-img { width: 120px; top: 6px; } /* tablet dọc */
+    #right-img { width: 90px; top: 6px; }
+}
+
+@media (max-width: 480px) {
+    #left-img { width: 100px; top: 4px; } /* điện thoại */
+    #right-img { width: 80px; top: 4px; }
+}
+
 
     /* Tiêu đề ở giữa */
     #title-bar {
