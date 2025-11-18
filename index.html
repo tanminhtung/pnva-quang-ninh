@@ -1,203 +1,119 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pickleball Viewer – JSON + Images</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>BẢNG XẾP HẠNG PICKLEBALL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
-      color: #fff;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
     body {
-      display: flex;
-      flex-direction: column;
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      background: #f5f5f5;
     }
-
-    .header {
-      padding: 8px 12px;
+    h1 {
       text-align: center;
-      font-weight: 700;
-      font-size: 20px;
-      background: #111;
-      border-bottom: 1px solid #333;
+      margin-bottom: 4px;
     }
-
-    .table-container {
-      flex: 1;
-      overflow-y: auto;
+    .subtitle {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #555;
+    }
+    #table-container {
       overflow-x: auto;
-      background: #000;
     }
-
     table {
       border-collapse: collapse;
-      width: 100%;
-      table-layout: fixed;
-      font-size: 15px;
+      margin: 0 auto;
+      background: #fff;
+      min-width: 600px;
     }
-
-    thead {
-      position: sticky;
-      top: 0;
-      background: #222;
-      z-index: 10;
-    }
-
     th, td {
-      padding: 6px 4px;
-      border-bottom: 1px solid #333;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      border: 1px solid #ddd;
+      padding: 6px 8px;
       text-align: center;
+      vertical-align: middle;
+      font-size: 14px;
     }
-
-    tbody tr:nth-child(even) td {
-      background: #151515;
+    th {
+      background: #f0f0f0;
+      font-weight: bold;
     }
-    tbody tr:nth-child(odd) td {
-      background: #050505;
-    }
-
-    td.name, th.name {
-      text-align: left;
-    }
-
-    td.last-col, th.last-col {
-      width: 80px;
-    }
-
-    td.last-col img {
+    img {
       max-width: 60px;
       max-height: 60px;
       object-fit: contain;
       display: block;
       margin: 0 auto;
     }
-
-    .footer {
-      padding: 6px 10px;
-      font-size: 12px;
-      background: #111;
-      border-top: 1px solid #333;
-      display: flex;
-      justify-content: space-between;
-      color: #ccc;
-    }
   </style>
 </head>
-
 <body>
-  <div id="table-container" class="table-container">
-    <table id="ranking-table">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <h1>BẢNG XẾP HẠNG PICKLEBALL</h1>
+  <div class="subtitle">Auto update từ Google Sheets</div>
 
-  <div class="footer">
-    <div id="last-updated">Đang tải...</div>
-  </div>
+  <div id="table-container">Đang tải...</div>
 
-<script>
-  // ⭐ API Apps Script của bạn (đã dùng URL bạn gửi)
-  const API_URL = "https://script.google.com/macros/s/AKfycbz1_Pv7nnFw5Ylh-HFE-BxxdQYXX8FIIuesc239s6helZOfI27WwfLMbRvQfDWSk3wrZg/exec";
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1_Pv7nnFw5Ylh-HFE-BxxdQYXX8FIIuesc239s6helZOfI27WwfLMbRvQfDWSk3wrZg/exec";
 
-  // Thời gian refresh (ms). 5000 = 5 giây
-  const REFRESH_MS = 5000;
+    async function loadData() {
+      const container = document.getElementById("table-container");
 
-  const container = document.getElementById("table-container");
-  const table = document.getElementById("ranking-table");
-  const thead = table.querySelector("thead");
-  const tbody = table.querySelector("tbody");
-  const updatedEl = document.getElementById("last-updated");
+      try {
+        const res = await fetch(SCRIPT_URL);
+        if (!res.ok) throw new Error("HTTP " + res.status);
 
-  async function fetchData() {
-    const res = await fetch(API_URL + "?t=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) throw new Error("Lỗi: " + res.status);
-    const payload = await res.json();   // { range: {...}, data: [...] }
-    return payload.data || [];
-  }
+        const json = await res.json();
+        const data = json.data || []; // mảng 2 chiều, mỗi ô là {text, imageUrls}
 
-  function renderTable(data) {
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
-    if (!data || data.length === 0) return;
+        // Tạo bảng
+        const table = document.createElement("table");
 
-    // Hàng đầu tiên là header
-    const headerRow = document.createElement("tr");
-    data[0].forEach((cell, idx) => {
-      const th = document.createElement("th");
-      const text = cell && cell.text ? cell.text : "";
-      th.textContent = text;
-      if (idx === 1) th.classList.add("name");               // cột 2: tên
-      if (idx === data[0].length - 1) th.classList.add("last-col"); // cột cuối: ảnh/QR
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
+        data.forEach((row, rowIndex) => {
+          const tr = document.createElement("tr");
 
-    // Các hàng còn lại là dữ liệu
-    for (let r = 1; r < data.length; r++) {
-      const row = data[r];
-      if (!row) continue;
+          row.forEach((cell, colIndex) => {
+            const td = document.createElement(rowIndex === 3 ? "th" : "td");
+            // rowIndex === 3 vì trong JSON của bạn hàng thứ 4 là tiêu đề: STT, Vận động viên,...
 
-      const tr = document.createElement("tr");
+            // Nếu có ảnh
+            if (cell.imageUrls && cell.imageUrls.length > 0) {
+              const img = document.createElement("img");
+              img.src = cell.imageUrls[0];      // chỉ lấy ảnh đầu tiên
+              td.appendChild(img);
+            }
 
-      row.forEach((cell, idx) => {
-        const td = document.createElement("td");
-        const text = cell && cell.text ? cell.text : "";
-        const imgs = (cell && cell.imageUrls) ? cell.imageUrls : [];
+            // Nếu có text
+            if (cell.text) {
+              // Nếu vừa có ảnh vừa có text thì xuống dòng
+              if (td.childNodes.length > 0) {
+                td.appendChild(document.createElement("br"));
+              }
+              const span = document.createElement("span");
+              span.textContent = cell.text;
+              td.appendChild(span);
+            }
 
-        if (imgs.length > 0) {
-          // Có ảnh → hiển thị ảnh, text (nếu có) dưới ảnh
-          const img = document.createElement("img");
-          img.src = imgs[0];
-          td.appendChild(img);
+            tr.appendChild(td);
+          });
 
-          if (text) {
-            const span = document.createElement("div");
-            span.textContent = text;
-            span.style.fontSize = "11px";
-            td.appendChild(span);
-          }
-        } else {
-          td.textContent = text;
-        }
+          table.appendChild(tr);
+        });
 
-        if (idx === 1) td.classList.add("name");
-        if (idx === row.length - 1) td.classList.add("last-col");
+        // Gắn vào DOM
+        container.innerHTML = "";
+        container.appendChild(table);
 
-        tr.appendChild(td);
-      });
-
-      tbody.appendChild(tr);
+      } catch (err) {
+        console.error(err);
+        container.textContent = "Lỗi tải dữ liệu!";
+      }
     }
 
-    updatedEl.textContent = "Cập nhật: " + new Date().toLocaleTimeString("vi-VN");
-  }
-
-  async function loadData() {
-    const prevScrollTop = container.scrollTop;
-
-    try {
-      const data = await fetchData();
-      renderTable(data);
-      container.scrollTop = prevScrollTop; // giữ nguyên vị trí cuộn
-    } catch (err) {
-      console.error(err);
-      updatedEl.textContent = "Lỗi tải dữ liệu...";
-    }
-  }
-
-  loadData();
-  setInterval(loadData, REFRESH_MS);
-</script>
+    loadData();
+  </script>
 </body>
 </html>
