@@ -30,11 +30,25 @@
         border: 1px solid #1f2937;
     }
 
+    /* Bọc bảng để có thể kéo ngang trên màn nhỏ */
+    #table-container {
+        text-align: center;
+        padding: 4px;
+        font-size: 14px;
+        color: #6b7280;
+        overflow-x: auto;
+    }
+
+    #table-container table {
+        margin: 0 auto;
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
         background: white;
         margin-top: 8px;
+        min-width: 720px; /* nếu màn nhỏ hơn thì xuất hiện thanh kéo ngang */
     }
 
     /* Header bảng */
@@ -65,9 +79,11 @@
         background: #f3f4f6;
     }
 
-    /* Hover hiệu ứng bảng đấu */
-    tr.data-row:hover td {
-        background: #e0f2fe;
+    /* Hover hiệu ứng bảng đấu (chỉ hữu ích trên thiết bị có chuột) */
+    @media (hover: hover) {
+      tr.data-row:hover td {
+          background: #e0f2fe;
+      }
     }
 
     /* Cột STT: hẹp, nổi bật */
@@ -118,7 +134,7 @@
     }
 
     #left-img {
-        left: 20px;
+        left: 10px;
     }
 
     #right-img {
@@ -135,13 +151,14 @@
         text-transform: uppercase;
         color: #f9fafb;
         text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+        padding: 4px 8px;
     }
 
     #title-bar .pvna {
         color: #dc2626; /* PVNA đỏ */
     }
 
-    /* Box “Lưu ý” cạnh QR */
+    /* Box “Lưu ý” cạnh QR - desktop / tablet rộng */
     .note-text {
         position: absolute;
         top: 18px;
@@ -158,12 +175,82 @@
         text-transform: uppercase;
     }
 
-    /* Text “Đang tải…” */
-    #table-container {
-        text-align: center;
-        padding: 8px;
-        font-size: 14px;
-        color: #6b7280;
+    /* ============================
+       🎾 Responsive cho tablet / mobile
+       ============================ */
+
+    @media (max-width: 1024px) {
+        .corner-img {
+            width: 100px;
+            top: 8px;
+        }
+
+        #title-bar {
+            margin-top: 70px;
+            font-size: 22px;
+        }
+
+        .sheet-card {
+            margin-top: 12px;
+            padding: 12px 10px 14px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #container {
+            padding: 8px;
+        }
+
+        .corner-img {
+            width: 80px;
+            top: 6px;
+        }
+
+        #title-bar {
+            margin-top: 70px;
+            font-size: 20px;
+            padding: 6px 10px;
+        }
+
+        .sheet-card {
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
+            padding: 10px 8px 12px;
+        }
+
+        td {
+            padding: 4px 6px;
+            font-size: 12px;
+        }
+
+        tr.header-row th {
+            padding: 6px 6px;
+            font-size: 11px;
+        }
+
+        /* Box Lưu ý không fix cạnh QR nữa, cho xuống riêng */
+        .note-text {
+            position: static;
+            text-align: center;
+            margin-top: 8px;
+            color: #e5e7eb;
+            text-shadow: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #title-bar {
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .corner-img {
+            width: 70px;
+        }
+
+        table {
+            min-width: 640px;
+        }
     }
 </style>
 
@@ -180,7 +267,7 @@
      src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/QR%20teck%20ko.jpg" 
      alt="Right Corner">
 
-<!-- Khối chữ Lưu ý cạnh QR -->
+<!-- Khối chữ Lưu ý (desktop: cạnh QR, mobile: xuống dưới, căn giữa) -->
 <div class="note-text">
     <div class="note-title">Lưu ý:</div>
     <div>Người chơi thua</div>
@@ -214,7 +301,7 @@ async function loadTable() {
         let headerFound = false;
         let dataRowCounter = 0;
 
-        data.forEach((row, rIndex) => {
+        data.forEach((row) => {
             const tr = document.createElement("tr");
 
             // Xác định hàng header: ô đầu tiên có text "STT"
@@ -234,7 +321,7 @@ async function loadTable() {
                 tr.classList.add(dataRowCounter % 2 === 0 ? "data-even" : "data-odd");
             }
 
-            row.forEach((cell, cIndex) => {
+            row.forEach((cell) => {
                 const isHeader = isHeaderRow;
                 const cellEl = document.createElement(isHeader ? "th" : "td");
 
