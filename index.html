@@ -10,7 +10,8 @@
         font-family: Arial, sans-serif;
         padding: 0;
         margin: 0;
-        background: #f5f5f5;
+        background: #0f172a; /* nền đậm kiểu sân đấu */
+        color: #111827;
     }
 
     #container {
@@ -19,28 +20,85 @@
         margin: auto;
     }
 
+    /* Thẻ “card” bao quanh bảng cho chuyên nghiệp */
+    .sheet-card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+        padding: 14px 14px 18px;
+        margin-top: 16px;
+        border: 1px solid #1f2937;
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
         background: white;
-        margin-top: 20px;
+        margin-top: 8px;
     }
 
-    th {
-        background: #eee;
-        font-weight: bold;
-        padding: 6px 8px;
-        border-bottom: 2px solid #bbb;
+    /* Header bảng */
+    tr.header-row th {
+        background: #0b2540;      /* navy */
+        color: #ffffff;
+        font-weight: 700;
+        padding: 8px 8px;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        border-bottom: 2px solid #111827;
     }
 
+    /* Ô dữ liệu chung */
     td {
         padding: 6px 8px;
         border: none;
+        font-size: 13px;
     }
 
-    /* Màu xen kẽ */
-    tr:nth-child(even) { background: #f9f9f9; }
-    tr:nth-child(odd)  { background: #ffffff; }
+    /* Zebra cho data-row */
+    tr.data-row.data-odd td {
+        background: #ffffff;
+    }
+
+    tr.data-row.data-even td {
+        background: #f3f4f6;
+    }
+
+    /* Hover hiệu ứng bóng bàn đấu */
+    tr.data-row:hover td {
+        background: #e0f2fe;
+    }
+
+    /* Cột STT: hẹp, nổi bật */
+    tr.header-row th:nth-child(1),
+    tr.data-row td:nth-child(1) {
+        width: 40px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    /* Cột Vận động viên: căn trái, rộng hơn */
+    tr.header-row th:nth-child(2),
+    tr.data-row td:nth-child(2) {
+        text-align: left;
+        padding-left: 10px;
+        min-width: 140px;
+        font-weight: 600;
+    }
+
+    /* Các cột số: căn phải cho nhìn gọn */
+    tr.header-row th:nth-child(n+3):nth-child(-n+9),
+    tr.data-row td:nth-child(n+3):nth-child(-n+9) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Cột Ghi chú (cuối) căn trái */
+    tr.header-row th:last-child,
+    tr.data-row td:last-child {
+        text-align: left;
+    }
 
     /* Ảnh trong bảng */
     .sheet-img {
@@ -56,6 +114,7 @@
         width: 120px;
         position: absolute;
         top: 10px;
+        object-fit: contain;
     }
 
     #left-img {
@@ -69,27 +128,41 @@
     /* Tiêu đề ở giữa */
     #title-bar {
         text-align: center;
-        margin-top: 70px; /* chừa chỗ cho 2 ảnh góc trên */
-        font-size: 24px;
-        font-weight: bold;
+        margin-top: 80px; /* chừa chỗ cho 2 logo góc */
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #111827;
     }
 
     #title-bar .pvna {
-        color: red;
+        color: #dc2626; /* PVNA đỏ */
     }
 
-    /* Khối chữ "Lưu ý" cạnh QR */
+    /* Box “Lưu ý” cạnh QR */
     .note-text {
         position: absolute;
-        top: 15px;
-        right: 150px; /* cách trái ảnh QR (ảnh rộng ~120px, QR ở right:10) */
+        top: 18px;
+        right: 150px; /* chỉnh để nằm sát QR hơn/xa hơn nếu cần */
         font-size: 14px;
         line-height: 1.2;
         text-align: right;
+        color: #f9fafb;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
     }
 
     .note-text .note-title {
-        font-weight: bold;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* Text “Đang tải…” */
+    #table-container {
+        text-align: center;
+        padding: 8px;
+        font-size: 14px;
+        color: #6b7280;
     }
 </style>
 
@@ -119,7 +192,9 @@
 </div>
 
 <div id="container">
-    <div id="table-container">Đang tải...</div>
+    <div class="sheet-card">
+        <div id="table-container">Đang tải...</div>
+    </div>
 </div>
 
 <script>
@@ -135,27 +210,38 @@ async function loadTable() {
 
         const table = document.createElement("table");
 
+        let dataRowCounter = 0; // để đánh số hàng dữ liệu cho zebra
+
         data.forEach((row, rIndex) => {
             const tr = document.createElement("tr");
 
+            // Xác định loại hàng
+            if (rIndex === 3) {
+                tr.classList.add("header-row");
+            } else if (rIndex > 3) {
+                dataRowCounter++;
+                tr.classList.add("data-row");
+                tr.classList.add(dataRowCounter % 2 === 0 ? "data-even" : "data-odd");
+            }
+
             row.forEach((cell, cIndex) => {
-                const td = document.createElement(rIndex === 3 ? "th" : "td");
+                const isHeader = (rIndex === 3);
+                const cellEl = document.createElement(isHeader ? "th" : "td");
 
                 // Có ảnh trong sheet
                 if (cell.imageUrls && cell.imageUrls.length > 0) {
                     const img = document.createElement("img");
                     img.src = cell.imageUrls[0];
                     img.className = "sheet-img";
-                    td.appendChild(img);
+                    cellEl.appendChild(img);
                 }
 
                 // Có text
                 if (cell.text) {
-                    if (td.childNodes.length > 0) td.appendChild(document.createElement("br"));
-                    td.appendChild(document.createTextNode(cell.text));
+                    cellEl.appendChild(document.createTextNode(cell.text));
                 }
 
-                tr.appendChild(td);
+                tr.appendChild(cellEl);
             });
 
             table.appendChild(tr);
