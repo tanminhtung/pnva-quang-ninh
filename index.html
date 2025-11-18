@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Pickleball Viewer – JSON</title>
+  <title>Pickleball Viewer – JSON + Images</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -71,7 +71,15 @@
     }
 
     td.last-col, th.last-col {
-      width: 90px;
+      width: 80px;
+    }
+
+    td.last-col img {
+      max-width: 60px;
+      max-height: 60px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
     }
 
     .footer {
@@ -97,15 +105,15 @@
   </div>
 
   <div class="footer">
-    <div>Auto update</div>
+    <div>Auto update từ Google Sheets</div>
     <div id="last-updated">Đang tải...</div>
   </div>
 
 <script>
-  /* ⭐⭐⭐ DÁN URL APPS SCRIPT JSON CỦA BẠN VÀO ĐÂY ⭐⭐⭐ */
+  // ⭐ API Apps Script của bạn (đã dùng URL bạn gửi)
   const API_URL = "https://script.google.com/macros/s/AKfycbwGTNySpFkDv0q19ykb5SeFg0BmTY4d7vCc6DIRu26fP2MV7bupxDbBPL8T1slopgIdLw/exec";
 
-  /* Thời gian refresh (ms). 5000 = 5 giây */
+  // Thời gian refresh (ms). 5000 = 5 giây
   const REFRESH_MS = 5000;
 
   const container = document.getElementById("table-container");
@@ -117,37 +125,61 @@
   async function fetchData() {
     const res = await fetch(API_URL + "?t=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error("Lỗi: " + res.status);
-    return await res.json(); // Mảng 2D
+    const payload = await res.json();   // { range: {...}, data: [...] }
+    return payload.data || [];
   }
 
   function renderTable(data) {
     thead.innerHTML = "";
     tbody.innerHTML = "";
-
     if (!data || data.length === 0) return;
 
+    // Hàng đầu tiên là header
     const headerRow = document.createElement("tr");
-    data[0].forEach((h, idx) => {
+    data[0].forEach((cell, idx) => {
       const th = document.createElement("th");
-      th.textContent = h;
-      if (idx === 1) th.classList.add("name");
-      if (idx === data[0].length - 1) th.classList.add("last-col");
+      const text = cell && cell.text ? cell.text : "";
+      th.textContent = text;
+      if (idx === 1) th.classList.add("name");               // cột 2: tên
+      if (idx === data[0].length - 1) th.classList.add("last-col"); // cột cuối: ảnh/QR
       headerRow.appendChild(th);
     });
     thead.appendChild(headerRow);
 
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      if (!row || row.every(c => !c)) continue;
+    // Các hàng còn lại là dữ liệu
+    for (let r = 1; r < data.length; r++) {
+      const row = data[r];
+      if (!row) continue;
 
       const tr = document.createElement("tr");
+
       row.forEach((cell, idx) => {
         const td = document.createElement("td");
-        td.textContent = cell;
+        const text = cell && cell.text ? cell.text : "";
+        const imgs = (cell && cell.imageUrls) ? cell.imageUrls : [];
+
+        if (imgs.length > 0) {
+          // Có ảnh → hiển thị ảnh, text (nếu có) dưới ảnh
+          const img = document.createElement("img");
+          img.src = imgs[0];
+          td.appendChild(img);
+
+          if (text) {
+            const span = document.createElement("div");
+            span.textContent = text;
+            span.style.fontSize = "11px";
+            td.appendChild(span);
+          }
+        } else {
+          td.textContent = text;
+        }
+
         if (idx === 1) td.classList.add("name");
         if (idx === row.length - 1) td.classList.add("last-col");
+
         tr.appendChild(td);
       });
+
       tbody.appendChild(tr);
     }
 
@@ -160,16 +192,15 @@
     try {
       const data = await fetchData();
       renderTable(data);
-      container.scrollTop = prevScrollTop;
+      container.scrollTop = prevScrollTop; // giữ nguyên vị trí cuộn
     } catch (err) {
-      updatedEl.textContent = "Lỗi tải dữ liệu...";
       console.error(err);
+      updatedEl.textContent = "Lỗi tải dữ liệu...";
     }
   }
 
   loadData();
   setInterval(loadData, REFRESH_MS);
-
 </script>
 </body>
 </html>
