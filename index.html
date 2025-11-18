@@ -20,28 +20,27 @@
     }
 
     table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    margin-top: 20px;
-}
-
-th {
-    background: #eee;
-    font-weight: bold;
-    padding: 6px 8px;
-    border-bottom: 2px solid #bbb;
-}
-
-td {
-    padding: 6px 8px;
-    border: none;
-}
-
-/* Màu xen kẽ */
-tr:nth-child(even) { background: #f9f9f9; }
-tr:nth-child(odd)  { background: #ffffff; }
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        margin-top: 20px;
     }
+
+    th {
+        background: #eee;
+        font-weight: bold;
+        padding: 6px 8px;
+        border-bottom: 2px solid #bbb;
+    }
+
+    td {
+        padding: 6px 8px;
+        border: none;
+    }
+
+    /* Màu xen kẽ */
+    tr:nth-child(even) { background: #f9f9f9; }
+    tr:nth-child(odd)  { background: #ffffff; }
 
     /* Ảnh trong bảng */
     .sheet-img {
@@ -66,6 +65,32 @@ tr:nth-child(odd)  { background: #ffffff; }
     #right-img {
         right: 10px;
     }
+
+    /* Tiêu đề ở giữa */
+    #title-bar {
+        text-align: center;
+        margin-top: 70px; /* chừa chỗ cho 2 ảnh góc trên */
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    #title-bar .pvna {
+        color: red;
+    }
+
+    /* Khối chữ "Lưu ý" cạnh QR */
+    .note-text {
+        position: absolute;
+        top: 15px;
+        right: 150px; /* cách trái ảnh QR (ảnh rộng ~120px, QR ở right:10) */
+        font-size: 14px;
+        line-height: 1.2;
+        text-align: right;
+    }
+
+    .note-text .note-title {
+        font-weight: bold;
+    }
 </style>
 
 </head>
@@ -76,10 +101,22 @@ tr:nth-child(odd)  { background: #ffffff; }
      src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/anh%20pvna.jpg" 
      alt="Left Corner">
 
-<!-- Ảnh phải -->
+<!-- Ảnh phải (QR) -->
 <img id="right-img" class="corner-img" 
      src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/QR%20teck%20ko.jpg" 
      alt="Right Corner">
+
+<!-- Khối chữ Lưu ý cạnh QR -->
+<div class="note-text">
+    <div class="note-title">Lưu ý:</div>
+    <div>Người chơi thua</div>
+    <div>20k/vợt/trận</div>
+</div>
+
+<!-- Tiêu đề ở giữa -->
+<div id="title-bar">
+    <span class="pvna">PVNA</span> SOCIAL TEST YOUR SKILL
+</div>
 
 <div id="container">
     <div id="table-container">Đang tải...</div>
