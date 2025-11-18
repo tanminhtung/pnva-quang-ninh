@@ -65,7 +65,7 @@
         background: #f3f4f6;
     }
 
-    /* Hover hiệu ứng bóng bàn đấu */
+    /* Hover hiệu ứng bảng đấu */
     tr.data-row:hover td {
         background: #e0f2fe;
     }
@@ -87,7 +87,7 @@
         font-weight: 600;
     }
 
-    /* Các cột số: căn phải cho nhìn gọn */
+    /* Các cột số: căn phải cho gọn */
     tr.header-row th:nth-child(n+3):nth-child(-n+9),
     tr.data-row td:nth-child(n+3):nth-child(-n+9) {
         text-align: right;
@@ -133,7 +133,8 @@
         font-weight: 800;
         letter-spacing: 1px;
         text-transform: uppercase;
-        color: #111827;
+        color: #f9fafb;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.7);
     }
 
     #title-bar .pvna {
@@ -144,7 +145,7 @@
     .note-text {
         position: absolute;
         top: 18px;
-        right: 150px; /* chỉnh để nằm sát QR hơn/xa hơn nếu cần */
+        right: 150px; /* chỉnh sát/xa QR nếu cần */
         font-size: 14px;
         line-height: 1.2;
         text-align: right;
@@ -210,22 +211,31 @@ async function loadTable() {
 
         const table = document.createElement("table");
 
-        let dataRowCounter = 0; // để đánh số hàng dữ liệu cho zebra
+        let headerFound = false;
+        let dataRowCounter = 0;
 
         data.forEach((row, rIndex) => {
             const tr = document.createElement("tr");
 
-            // Xác định loại hàng
-            if (rIndex === 3) {
+            // Xác định hàng header: ô đầu tiên có text "STT"
+            const isHeaderRow = row.some((cell, idx) =>
+                idx === 0 &&
+                cell &&
+                cell.text &&
+                cell.text.toString().trim().toUpperCase() === "STT"
+            );
+
+            if (isHeaderRow) {
                 tr.classList.add("header-row");
-            } else if (rIndex > 3) {
+                headerFound = true;
+            } else if (headerFound) {
                 dataRowCounter++;
                 tr.classList.add("data-row");
                 tr.classList.add(dataRowCounter % 2 === 0 ? "data-even" : "data-odd");
             }
 
             row.forEach((cell, cIndex) => {
-                const isHeader = (rIndex === 3);
+                const isHeader = isHeaderRow;
                 const cellEl = document.createElement(isHeader ? "th" : "td");
 
                 // Có ảnh trong sheet
