@@ -126,41 +126,39 @@
     }
 
     /* 2 ảnh góc */
-    /* Ảnh góc — phiên bản lớn đẹp */
-.corner-img {
-    position: absolute;
-    top: 10px;
-    object-fit: contain;
-}
+    .corner-img {
+        position: absolute;
+        top: 10px;
+        object-fit: contain;
+    }
 
-/* Ảnh trái lớn hơn (logo PVNA) */
-#left-img {
-    left: 10px;
-    width: 180px;     /* 🔥 tăng từ 120px → 180px */
-}
+    /* Ảnh trái lớn hơn (logo PVNA) */
+    #left-img {
+        left: 10px;
+        width: 180px;
+    }
 
-/* Ảnh bên phải (QR) giữ nguyên kích thước để không chiếm quá nhiều chỗ */
-#right-img {
-    right: 10px;
-    width: 120px;
-}
+    /* Ảnh bên phải (QR) giữ nguyên kích thước để không chiếm quá nhiều chỗ */
+    #right-img {
+        right: 10px;
+        width: 120px;
+    }
 
-/* --- Responsive chỉnh lại cho màn hình nhỏ --- */
-@media (max-width: 1024px) {
-    #left-img { width: 150px; }   /* tablet ngang */
-    #right-img { width: 100px; }
-}
+    /* --- Responsive chỉnh lại cho màn hình nhỏ --- */
+    @media (max-width: 1024px) {
+        #left-img { width: 150px; }
+        #right-img { width: 100px; }
+    }
 
-@media (max-width: 768px) {
-    #left-img { width: 120px; top: 6px; } /* tablet dọc */
-    #right-img { width: 90px; top: 6px; }
-}
+    @media (max-width: 768px) {
+        #left-img { width: 120px; top: 6px; }
+        #right-img { width: 90px; top: 6px; }
+    }
 
-@media (max-width: 480px) {
-    #left-img { width: 100px; top: 4px; } /* điện thoại */
-    #right-img { width: 80px; top: 4px; }
-}
-
+    @media (max-width: 480px) {
+        #left-img { width: 100px; top: 4px; }
+        #right-img { width: 80px; top: 4px; }
+    }
 
     /* Tiêu đề ở giữa */
     #title-bar {
@@ -323,6 +321,18 @@ async function loadTable() {
         let dataRowCounter = 0;
 
         data.forEach((row) => {
+            // 🔍 BỎ QUA CÁC HÀNG HOÀN TOÀN TRỐNG
+            const hasContent = row.some((cell) =>
+                cell &&
+                (
+                    (cell.text && cell.text.toString().trim() !== "") ||
+                    (cell.imageUrls && cell.imageUrls.length > 0)
+                )
+            );
+            if (!hasContent) {
+                return; // không render hàng này
+            }
+
             const tr = document.createElement("tr");
 
             // Xác định hàng header: ô đầu tiên có text "STT"
@@ -346,16 +356,14 @@ async function loadTable() {
                 const isHeader = isHeaderRow;
                 const cellEl = document.createElement(isHeader ? "th" : "td");
 
-                // Có ảnh trong sheet
-                if (cell.imageUrls && cell.imageUrls.length > 0) {
+                if (cell && cell.imageUrls && cell.imageUrls.length > 0) {
                     const img = document.createElement("img");
                     img.src = cell.imageUrls[0];
                     img.className = "sheet-img";
                     cellEl.appendChild(img);
                 }
 
-                // Có text
-                if (cell.text) {
+                if (cell && cell.text) {
                     cellEl.appendChild(document.createTextNode(cell.text));
                 }
 
