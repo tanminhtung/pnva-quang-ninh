@@ -34,7 +34,7 @@
     #table-container {
         text-align: center;
         padding: 4px;
-        font-size: 14px;
+        font-size: 15px; /* chữ trong bảng to hơn một chút */
         color: #6b7280;
         overflow-x: auto;
     }
@@ -58,7 +58,7 @@
         font-weight: 700;
         padding: 8px 8px;
         text-transform: uppercase;
-        font-size: 12px;
+        font-size: 14px;  /* to hơn một chút */
         letter-spacing: 0.04em;
         border-bottom: 2px solid #111827;
     }
@@ -67,7 +67,9 @@
     td {
         padding: 6px 8px;
         border: none;
-        font-size: 13px;
+        font-size: 15px;      /* tăng từ 13px → 15px */
+        font-weight: 500;     /* hơi đậm để dễ nhìn */
+        color: #111827;
     }
 
     /* Zebra cho data-row */
@@ -100,7 +102,7 @@
         text-align: left;
         padding-left: 10px;
         min-width: 140px;
-        font-weight: 600;
+        font-weight: 700;  /* tên VĐV đậm hơn cho nổi */
     }
 
     /* Các cột số: căn phải cho gọn */
@@ -148,16 +150,72 @@
     @media (max-width: 1024px) {
         #left-img { width: 150px; }
         #right-img { width: 100px; }
+
+        /* trên tablet, giữ font không bị nhỏ đi */
+        td {
+            font-size: 15px;
+        }
+        tr.header-row th {
+            font-size: 14px;
+        }
     }
 
     @media (max-width: 768px) {
-        #left-img { width: 120px; top: 6px; }
-        #right-img { width: 90px; top: 6px; }
+        #container {
+            padding: 8px;
+        }
+
+        .corner-img {
+            width: 80px;
+            top: 6px;
+        }
+
+        #title-bar {
+            margin-top: 70px;
+            font-size: 20px;
+            padding: 6px 10px;
+        }
+
+        .sheet-card {
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
+            padding: 10px 8px 12px;
+        }
+
+        /* Trước đây mình hạ font-size, giờ để vẫn dễ đọc trên mobile */
+        td {
+            padding: 4px 6px;
+            font-size: 14px;
+        }
+
+        tr.header-row th {
+            padding: 6px 6px;
+            font-size: 13px;
+        }
+
+        /* Box Lưu ý không fix cạnh QR nữa, cho xuống riêng */
+        .note-text {
+            position: static;
+            text-align: center;
+            margin-top: 8px;
+            color: #e5e7eb;
+            text-shadow: none;
+        }
     }
 
     @media (max-width: 480px) {
-        #left-img { width: 100px; top: 4px; }
-        #right-img { width: 80px; top: 4px; }
+        #title-bar {
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .corner-img {
+            width: 70px;
+        }
+
+        table {
+            min-width: 640px;
+        }
     }
 
     /* Tiêu đề ở giữa */
@@ -192,84 +250,6 @@
     .note-text .note-title {
         font-weight: 700;
         text-transform: uppercase;
-    }
-
-    /* ============================
-       🎾 Responsive cho tablet / mobile
-       ============================ */
-
-    @media (max-width: 1024px) {
-        .corner-img {
-            width: 100px;
-            top: 8px;
-        }
-
-        #title-bar {
-            margin-top: 70px;
-            font-size: 22px;
-        }
-
-        .sheet-card {
-            margin-top: 12px;
-            padding: 12px 10px 14px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        #container {
-            padding: 8px;
-        }
-
-        .corner-img {
-            width: 80px;
-            top: 6px;
-        }
-
-        #title-bar {
-            margin-top: 70px;
-            font-size: 20px;
-            padding: 6px 10px;
-        }
-
-        .sheet-card {
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
-            padding: 10px 8px 12px;
-        }
-
-        td {
-            padding: 4px 6px;
-            font-size: 12px;
-        }
-
-        tr.header-row th {
-            padding: 6px 6px;
-            font-size: 11px;
-        }
-
-        /* Box Lưu ý không fix cạnh QR nữa, cho xuống riêng */
-        .note-text {
-            position: static;
-            text-align: center;
-            margin-top: 8px;
-            color: #e5e7eb;
-            text-shadow: none;
-        }
-    }
-
-    @media (max-width: 480px) {
-        #title-bar {
-            font-size: 18px;
-            letter-spacing: 0.5px;
-        }
-
-        .corner-img {
-            width: 70px;
-        }
-
-        table {
-            min-width: 640px;
-        }
     }
 </style>
 
