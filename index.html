@@ -1,309 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Viewer</title>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 0;
-        margin: 0;
-        background: #0f172a; /* nền đậm kiểu sân đấu */
-        color: #111827;
-    }
-
-    #container {
-        padding: 10px;
-        max-width: 1200px;
-        margin: auto;
-    }
-
-    /* Thẻ “card” bao quanh bảng cho chuyên nghiệp */
-    .sheet-card {
-        background: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
-        padding: 14px 14px 18px;
-        margin-top: 16px;
-        border: 1px solid #1f2937;
-    }
-
-    /* Bọc bảng để có thể kéo ngang trên màn nhỏ */
-    #table-container {
-        text-align: center;
-        padding: 4px;
-        font-size: 14px;
-        color: #6b7280;
-        overflow-x: auto;
-    }
-
-    #table-container table {
-        margin: 0 auto;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        margin-top: 8px;
-        min-width: 720px; /* nếu màn nhỏ hơn thì xuất hiện thanh kéo ngang */
-    }
-
-    /* Header bảng */
-    tr.header-row th {
-        background: #0b2540;      /* navy */
-        color: #ffffff;
-        font-weight: 700;
-        padding: 8px 8px;
-        text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: 0.04em;
-        border-bottom: 2px solid #111827;
-    }
-
-    /* Ô dữ liệu chung */
-    td {
-        padding: 6px 8px;
-        border: none;
-        font-size: 13px;
-    }
-
-    /* Zebra cho data-row */
-    tr.data-row.data-odd td {
-        background: #ffffff;
-    }
-
-    tr.data-row.data-even td {
-        background: #f3f4f6;
-    }
-
-    /* Hover hiệu ứng bảng đấu (chỉ hữu ích trên thiết bị có chuột) */
-    @media (hover: hover) {
-      tr.data-row:hover td {
-          background: #e0f2fe;
-      }
-    }
-
-    /* Cột STT: hẹp, nổi bật */
-    tr.header-row th:nth-child(1),
-    tr.data-row td:nth-child(1) {
-        width: 40px;
-        text-align: center;
-        font-weight: 700;
-    }
-
-    /* Cột Vận động viên: căn trái, rộng hơn */
-    tr.header-row th:nth-child(2),
-    tr.data-row td:nth-child(2) {
-        text-align: left;
-        padding-left: 10px;
-        min-width: 140px;
-        font-weight: 600;
-    }
-
-    /* Các cột số: căn phải cho gọn */
-    tr.header-row th:nth-child(n+3):nth-child(-n+9),
-    tr.data-row td:nth-child(n+3):nth-child(-n+9) {
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-    }
-
-    /* Cột Ghi chú (cuối) căn trái */
-    tr.header-row th:last-child,
-    tr.data-row td:last-child {
-        text-align: left;
-    }
-
-    /* Ảnh trong bảng */
-    .sheet-img {
-        max-width: 160px;
-        max-height: 160px;
-        object-fit: contain;
-        display: block;
-        margin: auto;
-    }
-
-    /* 2 ảnh góc */
-    .corner-img {
-        position: absolute;
-        top: 10px;
-        object-fit: contain;
-    }
-
-    /* Ảnh trái lớn hơn (logo PVNA) */
-    #left-img {
-        left: 10px;
-        width: 180px;
-    }
-
-    /* Ảnh bên phải (QR) giữ nguyên kích thước để không chiếm quá nhiều chỗ */
-    #right-img {
-        right: 10px;
-        width: 120px;
-    }
-
-    /* --- Responsive chỉnh lại cho màn hình nhỏ --- */
-    @media (max-width: 1024px) {
-        #left-img { width: 150px; }
-        #right-img { width: 100px; }
-    }
-
-    @media (max-width: 768px) {
-        #left-img { width: 120px; top: 6px; }
-        #right-img { width: 90px; top: 6px; }
-    }
-
-    @media (max-width: 480px) {
-        #left-img { width: 100px; top: 4px; }
-        #right-img { width: 80px; top: 4px; }
-    }
-
-    /* Tiêu đề ở giữa */
-    #title-bar {
-        text-align: center;
-        margin-top: 80px; /* chừa chỗ cho 2 logo góc */
-        font-size: 26px;
-        font-weight: 800;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        color: #f9fafb;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.7);
-        padding: 4px 8px;
-    }
-
-    #title-bar .pvna {
-        color: #dc2626; /* PVNA đỏ */
-    }
-
-    /* Box “Lưu ý” cạnh QR - desktop / tablet rộng */
-    .note-text {
-        position: absolute;
-        top: 18px;
-        right: 150px; /* chỉnh sát/xa QR nếu cần */
-        font-size: 14px;
-        line-height: 1.2;
-        text-align: right;
-        color: #f9fafb;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-    }
-
-    .note-text .note-title {
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    /* ============================
-       🎾 Responsive cho tablet / mobile
-       ============================ */
-
-    @media (max-width: 1024px) {
-        .corner-img {
-            width: 100px;
-            top: 8px;
-        }
-
-        #title-bar {
-            margin-top: 70px;
-            font-size: 22px;
-        }
-
-        .sheet-card {
-            margin-top: 12px;
-            padding: 12px 10px 14px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        #container {
-            padding: 8px;
-        }
-
-        .corner-img {
-            width: 80px;
-            top: 6px;
-        }
-
-        #title-bar {
-            margin-top: 70px;
-            font-size: 20px;
-            padding: 6px 10px;
-        }
-
-        .sheet-card {
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
-            padding: 10px 8px 12px;
-        }
-
-        td {
-            padding: 4px 6px;
-            font-size: 12px;
-        }
-
-        tr.header-row th {
-            padding: 6px 6px;
-            font-size: 11px;
-        }
-
-        /* Box Lưu ý không fix cạnh QR nữa, cho xuống riêng */
-        .note-text {
-            position: static;
-            text-align: center;
-            margin-top: 8px;
-            color: #e5e7eb;
-            text-shadow: none;
-        }
-    }
-
-    @media (max-width: 480px) {
-        #title-bar {
-            font-size: 18px;
-            letter-spacing: 0.5px;
-        }
-
-        .corner-img {
-            width: 70px;
-        }
-
-        table {
-            min-width: 640px;
-        }
-    }
-</style>
-
-</head>
-<body>
-
-<!-- Ảnh trái -->
-<img id="left-img" class="corner-img" 
-     src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/anh%20pvna.jpg" 
-     alt="Left Corner">
-
-<!-- Ảnh phải (QR) -->
-<img id="right-img" class="corner-img" 
-     src="https://raw.githubusercontent.com/tanminhtung/pnva-quang-ninh/refs/heads/main/images/QR%20teck%20ko.jpg" 
-     alt="Right Corner">
-
-<!-- Khối chữ Lưu ý (desktop: cạnh QR, mobile: xuống dưới, căn giữa) -->
-<div class="note-text">
-    <div class="note-title">Lưu ý:</div>
-    <div>Người chơi thua</div>
-    <div>20k/vợt/trận</div>
-</div>
-
-<!-- Tiêu đề ở giữa -->
-<div id="title-bar">
-    <span class="pvna">PVNA</span> SOCIAL TEST YOUR SKILL
-</div>
-
-<div id="container">
-    <div class="sheet-card">
-        <div id="table-container">Đang tải...</div>
-    </div>
-</div>
-
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1_Pv7nnFw5Ylh-HFE-BxxdQYXX8FIIuesc239s6helZOfI27WwfLMbRvQfDWSk3wrZg/exec";
 
@@ -321,27 +15,43 @@ async function loadTable() {
         let dataRowCounter = 0;
 
         data.forEach((row) => {
-            // 🔍 BỎ QUA CÁC HÀNG HOÀN TOÀN TRỐNG
-            const hasContent = row.some((cell) =>
+            if (!row || row.length === 0) return;
+
+            // Lấy text ô STT (ô đầu tiên)
+            const firstCell = row[0];
+            const firstText = firstCell && firstCell.text
+                ? firstCell.text.toString().trim()
+                : "";
+
+            // Xác định hàng header: ô đầu tiên có text "STT"
+            const isHeaderRow = !headerFound && firstText.toUpperCase() === "STT";
+
+            // Hàm check hàng có bất kỳ nội dung nào (text hoặc image)
+            const hasAnyContent = row.some((cell) =>
                 cell &&
                 (
                     (cell.text && cell.text.toString().trim() !== "") ||
                     (cell.imageUrls && cell.imageUrls.length > 0)
                 )
             );
-            if (!hasContent) {
-                return; // không render hàng này
+
+            // 🔹 Trước khi gặp header:
+            //   – nếu hàng hoàn toàn trống thì bỏ qua
+            if (!headerFound && !isHeaderRow && !hasAnyContent) {
+                return;
+            }
+
+            // 🔹 Sau khi đã có header:
+            //   – Nếu KHÔNG phải header
+            //   – VÀ (không có nội dung hoặc ô STT rỗng) → bỏ qua (đây chính là các dòng trắng cuối)
+            if (headerFound && !isHeaderRow) {
+                const hasSTT = firstText !== "";
+                if (!hasAnyContent || !hasSTT) {
+                    return;
+                }
             }
 
             const tr = document.createElement("tr");
-
-            // Xác định hàng header: ô đầu tiên có text "STT"
-            const isHeaderRow = row.some((cell, idx) =>
-                idx === 0 &&
-                cell &&
-                cell.text &&
-                cell.text.toString().trim().toUpperCase() === "STT"
-            );
 
             if (isHeaderRow) {
                 tr.classList.add("header-row");
@@ -353,8 +63,7 @@ async function loadTable() {
             }
 
             row.forEach((cell) => {
-                const isHeader = isHeaderRow;
-                const cellEl = document.createElement(isHeader ? "th" : "td");
+                const cellEl = document.createElement(isHeaderRow ? "th" : "td");
 
                 if (cell && cell.imageUrls && cell.imageUrls.length > 0) {
                     const img = document.createElement("img");
@@ -363,7 +72,7 @@ async function loadTable() {
                     cellEl.appendChild(img);
                 }
 
-                if (cell && cell.text) {
+                if (cell && cell.text && cell.text.toString().trim() !== "") {
                     cellEl.appendChild(document.createTextNode(cell.text));
                 }
 
@@ -384,6 +93,3 @@ async function loadTable() {
 
 loadTable();
 </script>
-
-</body>
-</html>
